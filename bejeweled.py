@@ -1,6 +1,10 @@
 import random
 import numpy as np
 import copy
+import pygame
+import os
+
+pygame.init()
 
 size_of_board = input("Input size of board, format 'row column': ")
 # TODO: Implement max size for input
@@ -8,11 +12,13 @@ shape = size_of_board.split(" ")
 row = int(shape[0])
 col = int(shape[1])
 
+red_gem = pygame.image.load(os.path.join("images","red_gem.jpg"))
+red_gem = pygame.transform.scale(red_gem, (90, 90))
+
 gemsDict = {
-    "empty": 0,
-    "red": 1,
-    "orange": 2,
-    "yellow": 3,
+    1: red_gem,
+    2: pygame.image.load(os.path.join("images","orange_gem.jpg")),
+    3: pygame.image.load(os.path.join("images","yellow_gem.jpg")),
 }
 
 board = []
@@ -119,10 +125,40 @@ def nextState(board):
     while checkCombo(board):
         fall(board)
 
-board = initializeBoard(board)
-printBoard(board)
-print("\n")
-nextState(board)
-printBoard(board)
-print("\n")
-print(findAllValidMoves(board))
+def drawBoard(board, row, col):
+    black = (0, 0, 0)
+    bg = pygame.image.load(os.path.join('images','bejeweled_bg.jpg'))
+
+    width = 100 * col
+    height = 100 * row
+
+    screen = pygame.display.set_mode((width, height))
+    screen.blit(bg, (0, 0))
+
+    for i in range(row):
+        pygame.draw.line(screen, black, (0, ((height / row) * i)), (width, ((height / row) * i)), 5)
+    
+    for j in range(col):
+        pygame.draw.line(screen, black, ((width / col) * j, 0), ((width / col) * j, height), 5)
+    
+    # Test
+    screen.blit(gemsDict[1], (50, 50))
+
+    return screen
+
+# board = initializeBoard(board)
+# printBoard(board)
+# print("\n")
+# nextState(board)
+# printBoard(board)
+# print("\n")
+# print(findAllValidMoves(board))
+
+screen = drawBoard(board, row, col)
+
+
+while True:
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT: pygame.quit()
+    pygame.display.update()
