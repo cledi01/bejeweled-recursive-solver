@@ -1,10 +1,12 @@
 import random
+import time
 import numpy as np
 import copy
 import pygame
 import os
 
 pygame.init()
+clock = pygame.time.Clock()
 
 size_of_board = input("Input size of board, format 'row column': ")
 # TODO: Implement max size for input
@@ -15,21 +17,31 @@ col = int(shape[1])
 red_gem = pygame.image.load(os.path.join("images","red_gem.jpg"))
 red_gem = pygame.transform.scale(red_gem, (90, 90))
 
+orange_gem = pygame.image.load(os.path.join("images","orange_gem.jpg"))
+orange_gem = pygame.transform.scale(orange_gem, (90, 90))
+
+yellow_gem = pygame.image.load(os.path.join("images","yellow_gem.jpg"))
+yellow_gem = pygame.transform.scale(yellow_gem, (90, 90))
+
 gemsDict = {
     1: red_gem,
-    2: pygame.image.load(os.path.join("images","orange_gem.jpg")),
-    3: pygame.image.load(os.path.join("images","yellow_gem.jpg")),
+    2: orange_gem,
+    3: yellow_gem,
 }
 
 board = []
 
 def initializeBoard(board, initialBoard=None):
     if initialBoard == None:
-        for i in range(row):
-            currentColumn = []
-            for j in range(col):
-                currentColumn.append(random.randint(1, 3))
-            board.append(currentColumn)
+        while 1:
+            board = []
+            for i in range(row):
+                currentColumn = []
+                for j in range(col):
+                    currentColumn.append(random.randint(1, 3))
+                board.append(currentColumn)
+            if (not checkCombo(board)):
+                break
     else:
         board = initialBoard
     return board
@@ -121,6 +133,38 @@ def findAllValidMoves(board):
                     validMoves.append([[i,j], [i, j+1]])
     return validMoves
 
+def isEmpty(board):
+    for column in board:
+        for gem in column:
+            if (gem != 0):
+                return False
+    return True
+
+def solve(board, previousMove=None):
+    # Assumes board is initially in a stable state
+    # printBoard(board)
+    # print(f'previousMove: {previousMove}')
+    if isEmpty(board):
+        return [previousMove]
+    moves = findAllValidMoves(board)
+    # print(f'moves: {moves}')
+    if len(moves) == 0:
+        return []
+    for move in moves:
+        # print(f'move: {move}')
+        virtualBoard = copy.deepcopy(board)
+        swap(virtualBoard, move[0], move[1])
+        nextState(virtualBoard)
+        sequence = solve(virtualBoard, move)
+        # print(f'Sequence: {sequence}')
+        if len(sequence) != 0:
+            if previousMove != None:
+                sequence.insert(0, previousMove)
+                return sequence
+            else:
+                return sequence
+    return []
+
 def nextState(board):
     while checkCombo(board):
         fall(board)
@@ -142,11 +186,14 @@ def drawBoard(board, row, col):
         pygame.draw.line(screen, black, ((width / col) * j, 0), ((width / col) * j, height), 5)
     
     # Test
-    screen.blit(gemsDict[1], (50, 50))
+    for i in range(row):
+        for j in range(col):
+            if (board[i][j] == 0): continue
+            screen.blit(gemsDict[board[i][j]], (j * 100, i * 100))
 
     return screen
 
-# board = initializeBoard(board)
+board = initializeBoard(board)
 # printBoard(board)
 # print("\n")
 # nextState(board)
@@ -154,11 +201,49 @@ def drawBoard(board, row, col):
 # print("\n")
 # print(findAllValidMoves(board))
 
-screen = drawBoard(board, row, col)
+# Example Boards
+# [[1,2,1,0,1,2,1],
+#  [2,1,2,0,2,1,2]]
+# Sequence: [[[0, 1], [1, 1]], [[0, 5], [1, 5]]]
 
+# [[3, 2, 1, 2, 3, 2], 
+#  [1, 3, 2, 1, 1, 3], 
+#  [3, 1, 2, 3, 2, 1]]
 
-while True:
+# Sequence: [[[0, 1], [0, 2]], [[1, 0], [1, 1]], [[1, 5], [2, 5]], [[1, 4], [2, 4]]]
+
+while 1:
+    sequence = []
+    board = initializeBoard(board, [[3, 2, 1, 2, 3, 2],[1, 3, 2, 1, 1, 3],[3, 1, 2, 3, 2, 1]])
+    nextState(board)
+    sequence = solve(board)
+    if (len(sequence) > 0):
+        printBoard(board)
+        print(f'Sequence: {sequence}')
+        break
+print("Solved board")
+for move in sequence:
+    swap(board, move[0], move[1])
+    nextState(board)
+print(board)
+
+# screen = drawBoard(board, row, col)
+
+# oddeven = 1
+# while True:
+#     oddeven += 1
+#     screen = drawBoard(board, row, col)
+#     if (oddeven == 1):
+#         fall(board)
+#         time.sleep(1)
+#     else:
+#         checkCombo(board)
+#         time.sleep(1)
+#     if (isEmpty(board)):
+#         time.sleep(2)
+#         print("Solved")
+#     for event in pygame.event.get():
+#         if event.type == pygame.QUIT: pygame.quit()
+#     pygame.display.update()
+#     oddeven = oddeven % 2
     
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT: pygame.quit()
-    pygame.display.update()
