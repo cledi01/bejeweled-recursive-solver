@@ -1,3 +1,3 @@
-# bejeweled-min-max
+# bejeweled-recursive-solver
 
 Authors: Caleb Ledi, Kevin Widyatmodjo
