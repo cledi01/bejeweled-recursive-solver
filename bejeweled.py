@@ -5,6 +5,8 @@ import copy
 import pygame
 import os
 
+random.seed(123)
+
 pygame.init()
 clock = pygame.time.Clock()
 
@@ -193,7 +195,10 @@ def drawBoard(board, row, col):
 
     return screen
 
-board = initializeBoard(board)
+board = initializeBoard(board, 
+                        initialBoard=[[3, 2, 1, 2, 3, 2], 
+                                      [1, 3, 2, 1, 1, 3], 
+                                      [3, 1, 2, 3, 2, 1]])
 # printBoard(board)
 # print("\n")
 # nextState(board)
@@ -212,38 +217,46 @@ board = initializeBoard(board)
 
 # Sequence: [[[0, 1], [0, 2]], [[1, 0], [1, 1]], [[1, 5], [2, 5]], [[1, 4], [2, 4]]]
 
-while 1:
-    sequence = []
-    board = initializeBoard(board, [[3, 2, 1, 2, 3, 2],[1, 3, 2, 1, 1, 3],[3, 1, 2, 3, 2, 1]])
-    nextState(board)
-    sequence = solve(board)
-    if (len(sequence) > 0):
-        printBoard(board)
-        print(f'Sequence: {sequence}')
+# while 1:
+#     sequence = []
+#     board = initializeBoard(board, [[3, 2, 1, 2, 3, 2],[1, 3, 2, 1, 1, 3],[3, 1, 2, 3, 2, 1]])
+#     nextState(board)
+#     sequence = solve(board)
+#     if (len(sequence) > 0):
+#         printBoard(board)
+#         print(f'Sequence: {sequence}')
+#         break
+# print("Solved board")
+# for move in sequence:
+#     swap(board, move[0], move[1])
+#     nextState(board)
+# print(board)
+
+nextState(board)
+sequence = solve(board)
+print(f'Sequence: {sequence}')
+screen = drawBoard(board, row, col)
+pygame.image.save(screen, f"Move 0.jpg")
+
+while True:
+    if len(sequence) == 0:
+        print("Unsolvable")
+        time.sleep(2)
         break
-print("Solved board")
-for move in sequence:
-    swap(board, move[0], move[1])
-    nextState(board)
-print(board)
 
-# screen = drawBoard(board, row, col)
+    checkCombo(board)
+    for i, move in enumerate(sequence):
+        swap(board, move[0], move[1])
+        nextState(board)
+        screen = drawBoard(board, row, col)
+        pygame.image.save(screen, f"Move {i+1}.jpg")
+        # time.sleep(1)
+        pygame.display.update()
+        # time.sleep(1)
+        # if (isEmpty(board)):
+        #     print("Solved")
+        #     time.sleep(2)
+        #     break
+    break
 
-# oddeven = 1
-# while True:
-#     oddeven += 1
-#     screen = drawBoard(board, row, col)
-#     if (oddeven == 1):
-#         fall(board)
-#         time.sleep(1)
-#     else:
-#         checkCombo(board)
-#         time.sleep(1)
-#     if (isEmpty(board)):
-#         time.sleep(2)
-#         print("Solved")
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT: pygame.quit()
-#     pygame.display.update()
-#     oddeven = oddeven % 2
     
